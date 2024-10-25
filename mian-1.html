@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Integration Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .quiz-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            padding-top: 60px; /* Make space for the sticky score */
+        }
+        .score-container {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            padding: 10px 20px;
+            border-bottom: 1px solid #eee;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .question {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .option:hover:not(.correct):not(.incorrect) {
+            background-color: #f0f0f0;
+        }
+        .correct {
+            background-color: #90EE90;
+            pointer-events: none;
+        }
+        .incorrect {
+            background-color: #FFB6C1;
+            pointer-events: none;
+        }
+        #score {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .progress {
+            font-size: 1em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="score-container">
+            <div id="score">Score: 0/0 (0%)</div>
+            <div class="progress">Questions answered: <span id="progress">0/0</span></div>
+        </div>
+        <h1>Data Integration Quiz</h1>
+        <div id="quiz"></div>
+    </div>
+
+    <script>
+        const quizData = [
+        {
+            question: "According to the lecture on Data Integration, which of the following statements accurately describes the characteristics of data integration approaches?",
+            options: [
+                "Local as View is more extensible than Global as View when adding new data sources",
+                "In the Federation approach, all data sources are translated to a global schema",
+                "The Warehouse approach involves direct communication between sources",
+                "Global as View is a mediation approach where sources are defined in terms of global relations",
+                "The Mediator approach requires physical data transfer"
+            ],
+            correct: 0
+        },
+        { question: "According to the lecture on entity resolution, which method is used to model the relationships between mentions and entities without assuming independence?",
+        options: [
+            "McCallum method using conditional random fields",
+            "Naive Bayes classification",
+            "Decision tree algorithms",
+            "K-means clustering",
+            "Random guessing"
+        ],
+            
+            correct: 0
+        },
+        {
+            question: "In data integration, which approach allows the mediator to define source capabilities using global predicates, enabling it to find all possible query solutions?",
+            options: [
+                "Local-as-View (LAV)",
+                "Global-as-View (GAV)",
+                "Schema Alignment",
+                "Data Fusion",
+                "Record Linkage"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture, which of the following is not true about Entity Resolution?",
+            options: [
+                "Entity resolution is simple because it only requires matching names exactly",
+                "It is a necessary pre-step for advanced stages of the data pipeline",
+                "Entity resolution is the process of identifying and clustering different manifestations of the same real-world object",
+                "Ambiguity, such as different people sharing the same name, makes entity resolution difficult",
+                "Entity resolution involves handling various manifestations of real-world objects in text data"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, which of the following best describes the concept of 'attraction' factors in the pairwise factor model for entity resolution?",
+            options: [
+                "They encourage linking mentions that are likely to refer to the same entity based on similarity",
+                "They prevent mentions from being linked to any entity",
+                "They ensure that every mention is assigned to a unique entity",
+                "They randomly distribute mentions across entities",
+                "They only consider exact string matches when linking mentions"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, why is the en_core_web_sm model often chosen over other available models in SpaCy library for natural language processing tasks?",
+            options: [
+                "It is smaller and faster while still providing useful features for many general NLP tasks",
+                "It has the largest vocabulary and performs the best on complex text analysis tasks",
+                "It includes advanced deep learning components that make it the most accurate model",
+                "It is the only model that supports tokenization",
+                "It automatically translates text into multiple languages"
+            ],
+            correct: 0
+        },
+        {
+            question: "Which of the following best describes the role of the 'proposal distribution' in the Metropolis-Hastings algorithm as applied to entity resolution?",
+            options: [
+                "It generates a new state by randomly selecting and moving a mention to another entity",
+                "It ensures that every mention is paired with the most likely entity based on similarity",
+                "It provides a mechanism for calculating the acceptance probability for merging entities",
+                "It verifies the accuracy of the current entity configuration by comparing all possible states",
+                "It combines multiple mentions into a single entity without considering their similarity"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the example discussed in lecture 9, which of the following is NOT an example of ambiguity in entity resolution?",
+            options: [
+                "Same person, same name",
+                "Different name, same person",
+                "Same name, different person",
+                "Same name, different spelling"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, which term, in spaCy, is used to describe a single unit of text, such as a word, punctuation mark, or a symbol, after the pipeline has processed a document?",
+            options: [
+                "Token",
+                "Entity",
+                "Lemma",
+                "Span",
+                "Doc"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on data integration, what is the primary function of entity resolution?",
+            options: [
+                "To identify and merge duplicate entities across datasets",
+                "To create a unified schema for all data sources",
+                "To encrypt sensitive information during data transfer",
+                "To generate reports based on integrated data",
+                "To transform data types for consistency"
+            ],
+            correct: 0
+        },
+        {
+            question: "In a SpaCy pipeline, which step is crucial for ensuring that words like 'he,' 'she,' and 'they' are linked back to their respective entities?",
+            options: [
+                "Coreference resolution, which links pronouns to the correct entities within the text",
+                "Named entity recognition (NER), which identifies people, places, and organizations in the text",
+                "Tokenization, which breaks the text into individual words",
+                "Lemmatization, which reduces words to their base form",
+                "Part-of-speech tagging, which assigns grammatical categories to each word"
+            ],
+            correct: 0
+        },
+        {
+            question: "What is the primary advantage of using a Hierarchical Coreference model in resolving entities across datasets?",
+            options: [
+                "It allows for matching entities at multiple levels of granularity, from fine to coarse",
+                "It automatically generates unique keys for each entity in the dataset",
+                "It relies on blocking techniques to reduce the search space for entity resolution",
+                "It guarantees schema consistency across all datasets before resolving entities",
+                "It removes duplicates by enforcing strict attribute-based matching rules"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture 9 slides, what metric is used for calculating similarity in the pairwise factor model?",
+            options: [
+                "Cosine similarity",
+                "Euclidean distance",
+                "Manhattan distance",
+                "Jaccard similarity",
+                "Hamming distance"
+            ],
+            correct: 0
+        },
+        {
+            question: "Which combination of features best describes how bipartite factor graphs contribute to entity resolution?",
+            options: [
+                "They represent mentions and entities as distinct node sets, model pairwise relationships, and enable probabilistic inference",
+                "They only represent mentions, use deterministic matching, and are limited to within-document coreference",
+                "They model hierarchical relationships, require exact string matches, and cannot handle uncertainty",
+                "They represent entities as single nodes, use only repulsion factors, and are ineffective for large-scale problems"
+            ],
+            correct: 0
+        },
+        {
+            question: "What is the baseline approach for entity resolution described in the slides?",
+            options: [
+                "Randomly selecting a mention and adding it to a random entity",
+                "Clustering mentions based on string similarity",
+                "Using a rule-based system to match entities",
+                "Applying a supervised machine learning classifier",
+                "Performing hierarchical agglomerative clustering"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture 8 on Data Integration, what is the primary purpose of data fusion?",
+            options: [
+                "Reconciling conflicting data entries to present a unified view",
+                "Extracting data from various sources",
+                "Harmonizing database structures",
+                "Storing data centrally for better access",
+                "Applying machine learning techniques for better query performance"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture on Entity resolution, what is the role of 'repulsion' factors in the pairwise factor model for entity resolution?",
+            options: [
+                "To discourage linking mentions that do not belong to the same entity",
+                "To ensure that entities with similar names are always merged",
+                "To simplify the model by reducing the number of mentions considered",
+                "To enforce deterministic relationships between entities",
+                "To randomly assign entities without probabilistic evaluation"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture 9, what is one key challenge addressed by the Metropolis-Hastings algorithm in entity resolution?",
+            options: [
+                "Efficient sampling in large and complex spaces",
+                "Guaranteeing perfect accuracy in entity matches",
+                "Eliminating the need for probabilistic models",
+                "Reducing the number of required factors",
+                "Automatically merging entities with similar names"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on Entity Resolution, which sampling algorithm is primarily used in the Baseline Entity Resolution process?",
+            options: [
+                "MCMC Metropolis Hastings algorithm",
+                "Monte Carlo Markov Chain method",
+                "K-Means clustering algorithm",
+                "Naive Bayes algorithm"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to Lecture 8, which of the following mediation approaches are easier to implement?",
+            options: [
+                "Global as View",
+                "Local as View",
+                "Schema Alignment and Data Fusion",
+                "Legacy Databases"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the research paper, 'Large-Scale Cross-Document Coreference Using Distributed Inference and Hierarchical Models', which of the following is a challenge in large-scale cross document coreference?",
+            options: [
+                "Impracticality of considering all possible groupings of mentions",
+                "Limited processing or computing power",
+                "Inability to represent uncertainty",
+                "Lack of labeled data"
+            ],
+            correct: 0
+        },
+        {
+            question: "Why is data integration considered a challenging process in data management?",
+            options: [
+                "Due to the complexity of handling data variety, inconsistency, and ensuring data quality across different sources",
+                "Because it only involves combining data from multiple sources into a single repository",
+                "Because data integration tools are widely available and require minimal expertise to use",
+                "Because it focuses solely on real-time data synchronization between systems",
+                "Due to the ease of matching data formats and resolving semantic differences between sources"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, in the SpaCy library, what does the term refer to?",
+            options: [
+                "A generator that provides a list of noun phrases (base noun phrases) present in a parsed document, including the noun and its modifiers",
+                "A method that extracts all verb phrases from a given document",
+                "A function that identifies named entities in a text",
+                "A property that converts all the words in a document to their base form",
+                "A tool for removing stop words from a document"
+            ],
+            correct: 0
+        },
+        {
+            question: "In the context of data integration, how does record linkage handle conflicting information between databases, and what role does data fusion play in resolving these conflicts?",
+            options: [
+                "Record linkage matches records based on attribute similarity, and data fusion reconciles conflicting values by applying predefined rules or statistical methods",
+                "Record linkage matches records solely based on exact attribute matches, while data fusion is used to eliminate duplicate records",
+                "Record linkage focuses only on schema alignment, while data fusion handles all types of attribute mismatches",
+                "Record linkage uses manual review to match records, and data fusion automatically resolves conflicts without any manual intervention"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, which of the following situations highlights a problem in data integration that could cause confusion about the meaning of the data?",
+            options: [
+                "One company's database counts independent contractors as 'employees', while another database only counts full-time staff as 'employees'",
+                "One system uses 'addr' to refer to addresses, while another uses 'address' for the same thing",
+                "One database lists car colors as 'red,' while another uses color codes like '#FF0000' to represent the same color",
+                "One program saves its data in CSV files, while another uses JSON files, causing issues when combining the data"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to Lecture 9, based on the experiments and results for the Person-X Pairwise and Hierarchical Models, which of the following statements is true regarding the performance of the models?",
+            options: [
+                "The Hierarchical 'Combined' model consistently outperforms all other models in terms of B^3 F1 accuracy",
+                "The Pairwise model achieves the highest B^3 F1 accuracy across all running times compared to the Hierarchical models",
+                "The Pairwise model's accuracy improves faster than the 'Super-Entities' model in terms of relative wallclock running time",
+                "The 'Sub-Entities' model performs worse than the 'Super-Entities' model for all levels of relative running time",
+                "The Person-X model's B^3 F1 accuracy peaks at 50% across all models"
+            ],
+            correct: 0
+        },
+        {
+            question: "In the context of a pair-wise factor model for entity resolution, what is the probability of configuration E=e given the affinity and repulsion factors ψa and ψr?",
+            options: [
+                "p(e)∝exp (∑e∈E {∑m,n∈e,n ≠m ψa (m,n)+∑m∈e,n∈/e ψr (m,n)})",
+                "p(e)∝exp(∑e∈E {∑m,n∈e ψr (m,n)−∑m∈e,n∈/e ψa (m,n)})",
+                "p(e)=∑e∈E ψr (m,n)+ψa (m,n)",
+                "p(e)∝∑e∈E (∑m,n∈e ψa (m,n)⋅∑m,n∈/e ψr (m,n))",
+                "p(e)=∑e∈E (ψa (m,n)−ψr (m,n))"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to Lecture 9, which method is used in the McCallum entity resolution model to represent the relationships between entities?",
+            options: [
+                "Conditional random fields",
+                "Naive Bayes classifiers",
+                "Random number generation method",
+                "Hidden Markov Models",
+                "Data Fusion Method"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture 9, in the context of pairwise factor models for Entity Resolution, what advantage does the use of parallel proposal and MCMC-based inference offer over traditional deterministic approaches?",
+            options: [
+                "It enables exploration of multiple potential entity pairings simultaneously, improving convergence in large, complex datasets",
+                "It allows for direct mapping of entity pairs with perfect accuracy",
+                "It reduces the need for probabilistic modeling by simplifying the factor space",
+                "It ensures the factor model operates without uncertainty, guaranteeing optimal results in each iteration"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture 9, Why is Baseline Entity Resolution used in entity resolution processes?",
+            options: [
+                "It provides a simple method to propose merges by randomly selecting mentions and is easy to implement",
+                "It ensures the highest accuracy by selecting mentions based on similarity scores",
+                "It leverages advanced algorithms to resolve entities with minimal computational effort",
+                "It uses schema matching to align data across multiple sources",
+                "It relies on the Force to merge entities, as taught by Jedi masters"
+            ],
+            correct: 0
+        },
+        {
+            question: "In an entity resolution task, we encounter the following mentions across documents: 'Jimmy Fallon,' 'Late Night Host,' 'James Thomas Fallon,' and 'Jimmy Kimmel.' Using attract and repel factors, how would you resolve these mentions into entities?",
+            options: [
+                "Group 'Jimmy Fallon' and 'James Thomas Fallon' into one entity using attract factors, and 'Jimmy Kimmel' into a separate entity using repel factors",
+                "Group 'Late Night Host' and 'Jimmy Kimmel' using attract factors, and repel 'Jimmy Fallon' from 'James Thomas Fallon'",
+                "Group 'Jimmy Fallon' and 'Jimmy Kimmel' into one entity using repel factors, and use attract factors to separate 'James Thomas Fallon'",
+                "Use repel factors to group all mentions into one entity to resolve ambiguity"
+            ],
+            correct: 0
+        },
+        {
+            question: "How does factor-based entity resolution model the relationships between mentions, and what role does cosine similarity play in this process?",
+            options: [
+                "The model uses factors to represent pairwise similarities between mentions, and cosine similarity measures the contextual alignment between mention pairs, helping determine whether they refer to the same entity",
+                "Factors represent the semantic meanings of entities, while cosine similarity measures the syntactic similarity between mentions across documents",
+                "Factors determine whether entities should be merged or split based solely on the frequency of mention in each document, and cosine similarity is used to measure entity importance",
+                "The model uses factors to detect common spelling variations between mentions, while cosine similarity checks the numerical distance between attribute values",
+                "Cosine similarity is used to predict the likelihood of future mentions based on current entity patterns, and factors help track temporal changes in the data"
+            ],
+            correct: 0
+        },
+        {
+            question: "In the baseline Metropolis-Hastings sampling method for entity resolution, what is the role of the acceptance probability function, and why is it important?",
+            options: [
+                "The acceptance probability function ensures that a proposed merge is accepted only if it improves the overall state of the resolution process, allowing the system to probabilistically explore better entity configurations",
+                "The acceptance probability function is used to guarantee that no merges are rejected during the resolution process, ensuring that all entities are eventually resolved",
+                "The acceptance probability function calculates the number of iterations required before an entity can be merged, allowing the algorithm to control execution time",
+                "The acceptance probability function prevents the system from proposing any merge that involves two mentions with less than 90% string similarity, ensuring high precision in resolution",
+                "The acceptance probability function serves as a control mechanism that rejects merges when the system's memory usage exceeds a certain threshold, improving computational efficiency"
+            ],
+            correct: 0
+        },
+        {
+            question: "Which of the following is True about the MCMC-based Inference model?",
+            options: [
+                "Only a small part of the model is examined for each sample",
+                "Does not scale well as the complexity of the model increases",
+                "The proportion of good proposals is large",
+                "Takes a very small number of samples to converge"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what are the key challenges in cross-document coreference compared to within-document coreference?",
+            options: [
+                "The scale of mentions is much larger, and there's increased ambiguity in entity references",
+                "Cross-document coreference requires manual annotation of all documents",
+                "It can only be performed on documents written in the same language",
+                "Cross-document coreference is computationally simpler than within-document coreference",
+                "It relies solely on string matching without considering the context"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to Lecture, In a factor graph, G=⟨x,ψ⟩, where x={xi​}i=1n​ and ψ={ψi​}i=1m​, which of the following statements is true?",
+            options: [
+                "The x represents the set of variables in the factor graph",
+                "The only disadvantage of the factor graph is that they are efficient to represent and manipulate complex probabilistic models",
+                "n represents number of function factors connecting variables",
+                "The set ψ represents factor functions that connect multiple Variables"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture 9, which method is used primarily to cluster the references to the same entity in the entity resolution process?",
+            options: [
+                "Conditional Random Fields (CRFs)",
+                "Key-Value Mapping",
+                "Binary Search",
+                "Heuristic Indexing",
+                "Trie Data Structures"
+            ],
+            correct: 0
+        },
+        {
+            question: "In distributed systems, what is the primary challenge in ensuring data consistency across geographically separated data centers?",
+            options: [
+                "Handling network partitions and delays",
+                "Optimizing query performance",
+                "Automating backup processes",
+                "Increasing storage capacity"
+            ],
+            correct: 0
+        },
+        {
+            question: "What is one of the primary challenges caused by lexical inconsistencies in the context of data integration?",
+            options: [
+                "The use of different terms, such as 'addr' and 'address', to represent the same attribute across different databases",
+                "Storing the same value in varying units across databases",
+                "Conflicting data values between datasets",
+                "Variations in database storage formats"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what does schema alignment deal with in data integration?",
+            options: [
+                "Harmonizing database structures across different sources",
+                "Ensuring data consistency",
+                "Matching records that refer to the same entity",
+                "Normalization of data values",
+                "Ensuring referential integrity between linked databases"
+            ],
+            correct: 0
+        },
+        {
+            question: "What is the main role of the Pair-wise Factor Model in entity resolution?",
+            options: [
+                "Pair-wise Factor Model uses feature combinations to estimate similarity between entity pairs to decide if they are the same",
+                "Pair-wise Factor Model groups similar entities using a clustering algorithm to reduce complexity",
+                "Pair-wise Factor Model is based on random guessing and does not consider any features of the entity pairs",
+                "Pair-wise Factor Model relies on labeled data for supervised learning to accurately identify similar entities",
+                "Pair-wise Factor Model simply compares all attributes of entity pairs to find exactly matching entities"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what is the initial setup for entities in the hierarchical coreference model?",
+            options: [
+                "Sub-entities, entities, and super-entities are all initially set to size 1, and each mention starts out as its own entity",
+                "All mentions are grouped into large entities to simplify the model",
+                "To minimise complexity, entities are assigned at random",
+                "Until additional processing is started, mentions are not categorised"
+            ],
+            correct: 0
+        },
+        {
+            question: "From the entity resolution lecture, which among the following is not a step from the Hierarchical Coreference Model?",
+            options: [
+                "Propose a merge between entities at random and accept it only when it improves the overall state or else reject it",
+                "Group similar entities into Super-Entities",
+                "Cluster mentions into Sub-entities for targeted assignments",
+                "Combine the two sub-entities and super-entities into a combined hierarchical model",
+                "Inference is performed in a round-robin style, two of the three levels are fixed while a third is sampled"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what is a key challenge in integrating data from different legacy databases?",
+            options: [
+                "Incompatibility in schema and value mismatches",
+                "Limited access to the databases",
+                "Slow query response times",
+                "Outdated data storage formats"
+            ],
+            correct: 0
+        },
+        {
+            question: "When two databases use different terms, such as 'addr' in one database and 'address' in another, to refer to the same concept, what type of incompatibility does this represent in data integration?",
+            options: [
+                "Lexical Incompatibility",
+                "Value Mismatch",
+                "Semantic Difference",
+                "Schema Misalignment"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, how do factor graphs represent arbitrary relationships between random variables?",
+            options: [
+                "Through the use of factors that connect variables and represent constraints or functions",
+                "By directly connecting random variables to each other without intermediate factors",
+                "By using a fully connected graph structure, where every variable is connected to every other variable",
+                "By representing each random variable as an isolated node with no connections to other variables",
+                "By assuming that all variables are independent of each other"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on entity resolution, what do x and x' respectively represent in the Metropolis Hastings acceptance probability expression?",
+            options: [
+                "Current state and proposed state",
+                "Proposal distribution and target distribution",
+                "Attract factors and repel factors",
+                "Acceptance probability and Rejection probability",
+                "Normalization constant and Multiplicative constant"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on Data Integration, Which of the following process is not a part of the core steps in the data integration process?",
+            options: [
+                "Database Indexing",
+                "Schema Alignment",
+                "Entity Linkage",
+                "Data Fusion",
+                "Data Extraction"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what is the role of the mediator in resolving conflicting data values from different sources?",
+            options: [
+                "The mediator performs data fusion to reconcile conflicting values from different sources",
+                "The mediator selects the most reliable data source and ignores all other conflicting values",
+                "The mediator automatically flags conflicting data and requires user intervention to resolve it",
+                "The mediator applies a rule-based system to resolve conflicts based on data type"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what is the correct sequence of steps in the Baseline Entity Resolution process using the Metropolis Hastings algorithm?",
+            options: [
+                "Select a source mention, Select a destination mention, Propose a merge, Accept or reject the merge",
+                "Propose a merge, Select a source mention, Select a destination mention, Accept or reject the merge",
+                "Select a destination mention, Propose a merge, Select a source mention, Accept or reject the merge",
+                "Select a source mention, Propose a merge, Accept or reject the merge, Select a destination mention",
+                "Randomly assign mentions to entities, Reject the proposed merge, Select a destination mention, Accept the next merge"
+            ],
+            correct: 0
+        },
+        {
+            question: "In the context of Entity Resolution, what is the main challenge of dealing with syntactic ambiguity when matching entities across different datasets?",
+            options: [
+                "The same entity may be represented by different identifiers or formats in different datasets",
+                "Different entities may have the same name, leading to incorrect merges",
+                "The entity resolution process requires manual intervention to correct all incorrect matches",
+                "All entities must have a globally unique identifier for accurate matching",
+                "The dataset schemas need to be identical for entity resolution to work correctly"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, Why is it important to keep sub entities and super entities together in the Hierarchical Coreference Model without splitting them?",
+            options: [
+                "Sub entities usually contain individual names, and splitting them leads to incorrect associations, whereas super entities represent groups of related entities that provide more accurate proposals when kept together",
+                "Keeping both of them separate ensures that all entities are treated equally in the inference model",
+                "Super Entities are often smaller than sub entities, which makes them more significant in the inference process",
+                "Splitting the super entities doesn't provide any information, while sub entities increase the complexity of the model"
+            ],
+            correct: 0
+        },
+        {
+            question: "What is a significant challenge when performing record linkage in data integration?",
+            options: [
+                "Identifying and merging records that refer to the same real-world entity across datasets",
+                "Ensuring that all data sources share a common schema",
+                "Reducing the storage requirements for linked records",
+                "Automatically transforming data into a unified global format",
+                "Enhancing the speed of data query execution"
+            ],
+            correct: 0
+        },
+        {
+            question: "In the context of entity resolution, which of the following best describes the challenge of semantic ambiguity when resolving entities across multiple datasets?",
+            options: [
+                "Different entities may share similar attributes, leading to erroneous merges based on partial matches",
+                "The same entity may be represented by different identifiers across datasets, causing confusion during resolution",
+                "Schema discrepancies between datasets lead to difficulties in mapping data fields to a common structure",
+                "The presence of missing or incomplete data in records reduces the accuracy of entity linkage",
+                "Conflicting values between datasets make it hard to determine the correct entity attributes"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, how is inference performed in the Hierarchical Coreference Model?",
+            options: [
+                "Inference is performed in a round-robin style, where two of the three levels (sub-entities, entities, and super-entities) are fixed while the third level is sampled",
+                "Inference is performed by randomly grouping entities without any hierarchical structure",
+                "Inference is performed by fixing all levels of the model simultaneously without any sampling",
+                "Inference is performed solely at the sub-entity level without considering entities or super-entities",
+                "Inference is performed by sampling all levels of the model simultaneously without fixing any of them"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what is the primary purpose of repel factors in the entity resolution model?",
+            options: [
+                "To model dissimilarity between mentions that should not be in the same entity",
+                "To represent relationships between mentions within the same entity",
+                "To calculate the probability of a mention belonging to any entity",
+                "To determine the optimal number of entities in the dataset",
+                "To speed up the computational process of entity resolution"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture, which of the following is an example of entity resolution in text?",
+            options: [
+                "Identifying and clustering mentions of the same real-world object across different text documents",
+                "Creating a global schema for database integration",
+                "Performing data fusion by reconciling conflicting information between databases",
+                "Extracting noun phrases from a document for use in a relational database",
+                "Comparing two database schemas for structural alignment"
+            ],
+            correct: 0
+        },
+        {
+            question: "In the context of Data Integration, what role does the Mediator play in query processing in the context of Global-as-View (GAV) and Local-as-View approaches?",
+            options: [
+                "In GAV, the mediator processes queries into steps executed at sources. In LAV, sources are defined in terms of global relations, and the mediator finds all ways to build query from views",
+                "In GAV, the mediator generates the global schema from local data. In LAV, it processes queries without using sources",
+                "In GAV, the mediator defines the global schema dynamically. In LAV, it queries sources without a wrapper",
+                "In GAV, the mediator modifies local data directly. In LAV, it is used only for initial schema mapping",
+                "In GAV, the mediator sends queries directly to the sources. In LAV, it replaces the need for a wrapper by accessing sources directly"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture, what distinguishes the 'mediator' architecture from other data integration architectures like federations and warehouses?",
+            options: [
+                "A mediator architecture translates user queries into a sequence of source queries without directly storing data in a central location",
+                "It requires all data sources to be directly interconnected, allowing each source to communicate freely",
+                "A mediator architecture involves copying all data into a single centralized database for easier access",
+                "It ensures that all data transformations are done manually through handwritten scripts at each interface",
+                "A mediator architecture only works with sources that use the same data format and schema"
+            ],
+            correct: 0
+        },
+        {
+            question: "In the context of Mediation approaches in Data Integration, which statement highlights a key difference between Local-as-View (LAV) and Global-as-View (GAV) in terms of schema flexibility?",
+            options: [
+                "LAV allows for greater flexibility in adding new data sources without impacting the global schema",
+                "GAV enables quick integration of data sources by maintaining a stable global schema",
+                "LAV requires frequent adjustments to the global schema with any change in local data",
+                "GAV offers high adaptability due to its view-based structure for local sources"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, which of the following best describes the main challenge in data integration and entity resolution?",
+            options: [
+                "Handling heterogeneity in data formats, schema alignment, and conflicting values",
+                "Ensuring that all data is stored in a single, central database",
+                "Maintaining a consistent user interface for all data sources",
+                "Implementing advanced artificial intelligence techniques for data parsing",
+                "Guaranteeing that all data is collected from trusted sources only"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on Entity Resolution, In the baseline entity resolution approach using the Metropolis-Hastings algorithm, which of the following steps occurs first?",
+            options: [
+                "A source mention is selected at random",
+                "A merge between two mentions is proposed",
+                "A decision is made to accept or reject the merge",
+                "A destination mention is selected at random",
+                "The state of the system is updated"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on Data Integration, which of the following is not an Integration Architecture?",
+            options: [
+                "Wrapper",
+                "Federation",
+                "Warehouse",
+                "Mediator"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on the Hierarchical Coreference Model, how does the combined hierarchical model improve the efficiency of coreference proposals?",
+            options: [
+                "By grouping similar mentions into Sub-entities and combining them into Super-entities for more efficient distributions",
+                "By randomly assigning entities without any grouping to avoid complexity",
+                "By fixing all three levels of entities and preventing any from being sampled",
+                "By using only Sub-entities and ignoring the context from other levels",
+                "By letting each entity grow in size indefinitely, without a defined hierarchical structure"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture (lecture8-dataintegration), how do data sources communicate in federated architectures?",
+            options: [
+                "Directly with each other through wrappers",
+                "Through a central server that processes queries",
+                "By merging all records into one file",
+                "By compressing data before transferring",
+                "By storing data in the same format"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture and readings, what is the primary challenge addressed by entity resolution in large datasets?",
+            options: [
+                "Identifying and merging records that refer to the same real-world entity",
+                "Ensuring the data is stored in a single centralized database",
+                "Improving the performance of database queries through optimization techniques",
+                "Sorting data into predefined categories based on its attributes",
+                "Adding metadata to increase dataset understandability"
+            ],
+            correct: 0
+        },
+        {
+            question: "In Entity Resolution, what is likely to be a big problem with data that can make it hard to match items correctly?",
+            options: [
+                "Missing or incomplete information in records",
+                "Wrong information in the records",
+                "People have to enter data by hand (manually)",
+                "Only being able to work with organized data",
+                "Not being able to process data quickly"
+            ],
+            correct: 0
+        },
+        {
+            question: "Which method is often used to resolve entity linkage problems in data integration?",
+            options: [
+                "Record linkage",
+                "Data fusion",
+                "Schema alignment",
+                "Global-as-View (GAV)",
+                "Using duct tape to stick all records together"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, which of the following statements about Cross-document Coreference is INCORRECT?",
+            options: [
+                "Cross-document coreference guarantees that each string refers to a unique entity across documents",
+                "The same string may refer to different entities",
+                "Different strings may refer to the same entities",
+                "Within document mentions are 102, while cross-document mentions are 106"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, which of the following statements is not true about the baseline entity resolution algorithm?",
+            options: [
+                "The algorithm requires a predefined set of entity matches before it can start",
+                "Merges are proposed by randomly selecting both a source and destination mention",
+                "A merge is rejected if it worsens the overall state of the system",
+                "The baseline method involves adding a random mention to a random entity"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on Entity Resolution, what is the purpose of 'attract factors' in the entity resolution model?",
+            options: [
+                "To represent relationships between mentions within the same entity",
+                "To model the probability of a mention belonging to any entity",
+                "To capture the similarity between different entities",
+                "To represent the prior probability of entity existence",
+                "To model the temporal aspects of entity mentions"
+            ],
+            correct: 0
+        },
+        {
+            question: "Which of the following is a key factor in improving the accuracy of Entity Resolution (ER) when dealing with mentions across different documents?",
+            options: [
+                "Using attract and repel factors to model pairwise similarity and dissimilarity between mentions",
+                "Increasing the size of the initial entity blocks to reduce ambiguity in resolution",
+                "Applying random entity assignment during initialization to minimize computational cost",
+                "Ignoring context when resolving entity mentions across different documents to focus only on string similarity",
+                "Relying on predefined entity labels to directly assign mentions without additional processing"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what is the main challenge of entity resolution in text?",
+            options: [
+                "Ambiguity",
+                "Lack of data",
+                "Computational complexity",
+                "Language barriers",
+                "Time constraints"
+            ],
+            correct: 0
+        },
+        {
+            question: "Which of the following best describes a limitation of the 'Local as View' (LAV) approach in mediator-based data integration architectures?",
+            options: [
+                "LAV requires complex query rewriting since the mediator must find all possible ways to answer the global query from the local views",
+                "LAV cannot handle changes to the data sources, making it inflexible to schema updates",
+                "LAV requires predefined global-to-local mappings, which limits its ability to adapt to new data sources",
+                "LAV forces data sources to follow a strict global schema, reducing flexibility in data storage",
+                "LAV eliminates the need for schema alignment, which can cause inaccuracies in data integration"
+            ],
+            correct: 0
+        }, 
+        {
+            question: "According to the lecture on data integration, what is a key challenge of using the 'Global as View' (GAV) approach in mediator architectures?",
+            options: [
+                "It requires predefined mappings for all data sources, making it inflexible to changes",
+                "It allows data sources to define their capabilities independently, leading to inconsistencies",
+                "It eliminates the need for schema alignment, which can result in integration errors",
+                "It relies on dynamic mappings, which can be complex to maintain",
+                "It automatically resolves data conflicts without user intervention, which may not always be accurate"
+            ],
+            correct: 0
+        },
+        {
+            question: "Based on the lecture, which of the following best describes a defining feature of Warehouse architecture in data integration?",
+            options: [
+                "Data sources are translated from their local schema to a global schema and stored in a central database",
+                "Data is accessed directly from multiple sources without transformation",
+                "Queries are sent to individual sources and combined dynamically",
+                "Components communicate directly without a central database",
+                "The architecture provides a virtual warehouse without physically storing data"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, What does 'Data Fusion' primarily handle in the context of 'Small Data Integration'?",
+            options: [
+                "Reconciling conflicting data entries",
+                "Matching data structures across databases",
+                "Ensuring data is stored efficiently",
+                "Creating new data entries from existing ones"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture 9, which of the following best describes the Metropolis-Hastings algorithm as used in entity resolution for cross-document coreference?",
+            options: [
+                "A method that proposes random changes to entity configurations and accepts them based on a calculated probability",
+                "A deterministic algorithm that always finds the globally optimal entity configuration",
+                "A clustering algorithm that groups mentions based solely on string similarity",
+                "A method that requires a complete view of all entities simultaneously",
+                "An algorithm that only merges entities and never splits them"
+            ],
+            correct: 0
+        } ,
+        {
+            question: "In the context of data integration architecture, what is a key characteristic of a Federation architecture?",
+            options: [
+                "Everyone communicates directly with one another without a central authority",
+                "Centralized control where all data flows through a single hub",
+                "Data is stored in a unified database, accessible to all",
+                "Communication only occurs through user query",
+                "Components communicate only with specific neighboring components"
+            ],
+            correct: 0
+        },
+        {
+            question: "In the context of data integration, which of the following best describes the challenge of Schema Alignment?",
+            options: [
+                "Ensuring that the extracted data from multiple sources is represented in a common structure",
+                "Identifying and resolving conflicts between different values representing the same entity across multiple sources",
+                "Determining whether two references point to the same real-world entity",
+                "Copying all data from various sources into a single central database for analysis",
+                "Synchronizing data extraction processes across different cloud storage systems"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what is a key characteristic of factor graphs in the context of graphical models?",
+            options: [
+                "The factor graphs are bipartite graphical models that capture arbitrary relationships between random variables",
+                "The factor graphs are used exclusively for Bayesian networks for probabilistic reasoning",
+                "The factor graphs represent linear relationships and correlations between random variables only",
+                "The factor graphs are used to represent random variables using Hidden Markov Models (HMMs) exclusively"
+            ],
+            correct: 0
+        }, 
+        {
+            question: "According to the lecture, which of the following describes the Global as View (GAV) approach?",
+            options: [
+                "The mediator processes queries by transforming them into queries on the data sources",
+                "Data sources define their capabilities in terms of global predicates",
+                "It allows data sources to be defined independently of global schema requirements",
+                "The mediator dynamically adjusts mappings based on user queries",
+                "It requires a predefined schema for all integrated data sources"
+            ],
+            correct: 0
+        },
+        {
+            question: "In the context of mediation approaches discussed in the lecture, what is one key advantage of using the 'Local as View' (LAV) approach over the 'Global as View' (GAV) approach?",
+            options: [
+                "LAV is more extensible and allows new sources to be added by defining them as views of the global schema",
+                "LAV requires simpler implementation and provides direct control over what the mediator does",
+                "LAV eliminates the need for schema alignment, making integration faster",
+                "LAV is better for handling legacy databases that cannot be changed",
+                "LAV ensures that data fusion happens automatically without user input"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, how do the three main approaches to information integration (federations, warehouses, and mediators) compare in terms of their advantages and challenges when dealing with heterogeneous data sources?",
+            options: [
+                "Each approach offers different trade-offs between data freshness, query performance, and system complexity",
+                "All integration approaches provide equal performance and flexibility regardless of the data source heterogeneity",
+                "Federations are always superior to other methods for all data integration scenarios",
+                "Warehouses are only useful for very large datasets and offer no benefits for smaller-scale data integration",
+                "Mediator-based approaches are the optimal solution for all data integration scenarios due to their simplicity"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on Entity Resolution, what is the primary role of the inference step in the process of Distributed MAP Inference?",
+            options: [
+                "To perform calculations on the distributed entities within each machine",
+                "To distribute the entities across different machines",
+                "To finalize the MAP (Maximum A Posteriori) result after the distribution process",
+                "To combine and redistribute the entities to other machines",
+                "To randomly assign entities to machines for further processing"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to lecture on Entity Resolution, in the hierarchical coreference model, what is the main idea behind blocking proposals?",
+            options: [
+                "Grouping mentions into sub-entities",
+                "Randomly assigning entities",
+                "Merging sub-entities into a single entity",
+                "Selecting the largest entity first"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, In 'Small' data integration, what does 'Record Linkage' refer to?",
+            options: [
+                "Matching records based on content such as attributes, color, or pattern",
+                "Reconciling conflicting data values from different sources",
+                "Aligning the structure of data from different sources",
+                "Extracting data from various databases",
+                "Storing data centrally for better access"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, In the process of 'Small' data integration, which step involves mapping the structure of the data (e.g., shape)?",
+            options: [
+                "Schema Alignment",
+                "Record Linkage",
+                "Data Fusion",
+                "Data Extraction",
+                "Course Alignment"
+            ],
+            correct: 0
+        },
+        {
+            question: "When building a global schema for a mediator architecture, which approach defines the global schema in terms of local source schemas, allowing the mediator to execute queries using these local definitions?",
+            options: [
+                "Local as View (LAV)",
+                "Global as View (GAV)",
+                "Federation",
+                "Data Fusion"
+            ],
+            correct: 0
+        },
+        {
+            question: "In what scenario is a warehouse architecture preferred?",
+            options: [
+                "When all data should be centralized for querying",
+                "When data sources need to remain autonomous",
+                "When real-time data is needed",
+                "When data sources are highly dynamic"
+            ],
+            correct: 0
+        },
+        {
+            question: "In a mediator-based integration architecture, what is the role of the wrapper in relation to the user queries sent to multiple data sources, and how does it handle query results?",
+            options: [
+                "The wrapper translates queries and reformats incoming data from each source",
+                "The wrapper directly stores the results in the central database",
+                "The wrapper only executes the query without altering data or schema",
+                "The wrapper does not participate in query handling"
+            ],
+            correct: 0
+        },
+        {
+            question: "What does a Wrapper do in a data warehouse system?",
+            options: [
+                "It translates incoming queries and outgoing results between databases",
+                "It changes the schema of the database to fit global standards",
+                "It deletes redundant data from databases",
+                "It duplicates all data across different sources",
+                "It uses AI to predict what the database meant to say and translates accordingly"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on Entity Resolution, which of the following best describes the Mediator integration architecture?",
+            options: [
+                "A virtual warehouse that translates user queries into a sequence of source queries",
+                "A system where everyone communicates directly with each other",
+                "Sources are copied to a central database after translating to a global schema",
+                "A process where each source manages its own data independently without any central control",
+                "An architecture that only stores metadata of the sources without translating the data"
+            ],
+            correct: 0
+        },
+        {
+            question: "What is the primary advantage of using the McCallum method for entity resolution?",
+            options: [
+                "It is relational and does not assume independence",
+                "It is the oldest method for coreference resolution",
+                "It works only on specific domains",
+                "It is the fastest method for entity resolution"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on Entity Resolution, which of the following is a significant disadvantage of MCMC-based inference?",
+            options: [
+                "The proportion of good proposals is small",
+                "It examines the entire model for each sample",
+                "It scales poorly with model complexity",
+                "It is always faster than deterministic methods",
+                "It only works with simple models"
+            ],
+            correct: 0
+        }
+        ];
+
+        let score = 0;
+        let answeredQuestions = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function displayQuiz() {
+            const quizContainer = document.getElementById('quiz');
+            // Shuffle the questions
+            const shuffledQuestions = shuffleArray([...quizData]);
+            
+            shuffledQuestions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                
+                const shuffledOptions = shuffleArray([...question.options]);
+                const correctAnswer = question.options[question.correct];
+                const correctIndex = shuffledOptions.indexOf(correctAnswer);
+
+                questionDiv.innerHTML = `
+                    <p><strong>Question ${index + 1}:</strong> ${question.question}</p>
+                    <div class="options">
+                        ${shuffledOptions.map((option, i) => `
+                            <div class="option" data-correct="${i === correctIndex}">
+                                ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                quizContainer.appendChild(questionDiv);
+            });
+
+            updateProgress();
+
+            // Add click event listeners to options
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', function() {
+                    if (!this.classList.contains('correct') && !this.classList.contains('incorrect')) {
+                        const isCorrect = this.dataset.correct === 'true';
+                        this.classList.add(isCorrect ? 'correct' : 'incorrect');
+                        
+                        if (!isCorrect) {
+                            const siblings = this.parentElement.children;
+                            Array.from(siblings).forEach(sib => {
+                                if (sib.dataset.correct === 'true') {
+                                    sib.classList.add('correct');
+                                }
+                            });
+                        }
+
+                        if (isCorrect) score++;
+                        answeredQuestions++;
+                        
+                        const siblings = this.parentElement.children;
+                        Array.from(siblings).forEach(sib => {
+                            sib.style.pointerEvents = 'none';
+                        });
+
+                        updateScore();
+                        updateProgress();
+                    }
+                });
+            });
+        }
+
+        function updateScore() {
+            const percentage = Math.round((score / answeredQuestions) * 100);
+            document.getElementById('score').innerHTML = 
+                `Score: ${score}/${answeredQuestions} (${percentage}%)`;
+        }
+
+        function updateProgress() {
+            document.getElementById('progress').textContent = 
+                `${answeredQuestions}/${quizData.length}`;
+        }
+
+        // Initialize quiz
+        displayQuiz();
+    </script>
+</body>
+</html>ç

@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Integration Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 100%;
+            margin: 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            box-sizing: border-box;
+        }
+        .quiz-container {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            padding-top: 60px;
+        }
+        .score-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 0.9em;
+        }
+        .question {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .option {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            line-height: 1.4;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .option:active {
+            background-color: #f0f0f0;
+        }
+        .correct {
+            background-color: #90EE90;
+            pointer-events: none;
+        }
+        .incorrect {
+            background-color: #FFB6C1;
+            pointer-events: none;
+        }
+        #score {
+            font-weight: bold;
+        }
+        .progress {
+            color: #666;
+        }
+        h1 {
+            font-size: 1.5em;
+            margin-top: 0;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+            .quiz-container {
+                padding: 10px;
+                padding-top: 50px;
+            }
+            .option {
+                padding: 10px;
+            }
+            .score-container {
+                padding: 8px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="score-container">
+            <div id="score">Score: 0/0 (0%)</div>
+            <div class="progress">Progress: <span id="progress">0/0</span></div>
+        </div>
+        <h1>Data Integration Quiz</h1>
+        <div id="quiz"></div>
+    </div>
+
+    <script>
+        const quizData = [
+        {
+            question: "What evaluation metric should researchers rely on to reduce false negative cases in a classification model for detecting Covid-19?",
+            options: [
+                "Recall",
+                "Precision",
+                "MSE",
+                "F-1 score",
+                "MAE"
+            ],
+            correct: 0
+        },
+        {
+            question: "Which statement correctly describes the relationship between precision, recall, and the F-score?",
+            options: [
+                "The F-score is the harmonic mean of precision and recall, giving equal weight to both metrics.",
+                "The F-score is the arithmetic mean of precision and recall, highlighting the importance of both metrics.",
+                "The F-score is always greater than both precision and recall, reflecting its superior nature as a metric.",
+                "The F-score can be calculated independently of precision and recall values, making it a standalone measure.",
+                "The F-score is simply the average of true positives, false positives, and false negatives."
+            ],
+            correct: 0
+        },
+        {
+            question: "In a medical context classifying tumors, what does it mean if a classifier's ROC curve lies above the dotted line (TPR = FPR)?",
+            options: [
+                "The probability of correctly classifying a malignant tumor is greater than the probability of incorrectly classifying a benign tumor.",
+                "The classifier is no better than random guessing.",
+                "The probability of correctly classifying a malignant tumor is lower than the probability of incorrectly classifying a benign tumor.",
+                "The classifier is underperforming because the True Positive Rate is less than the False Positive Rate.",
+                "The ROC curve's shape indicates that the model is only useful for detecting the common cold."
+            ],
+            correct: 0
+        },
+        {
+            question: "Which of the following is an example of a classification task in machine learning?",
+            options: [
+                "Predicting whether an email is spam or not.",
+                "Estimating the price of a house based on its features.",
+                "Calculating the distance between two points on a map.",
+                "Determining the optimal route for delivery trucks.",
+                "Counting the number of cars passing through a traffic light."
+            ],
+            correct: 0
+        },
+        {
+            question: "In Locally Sensitive Hashing (LSH), what does the bit difference between two data points represent?",
+            options: [
+                "Cosine distance",
+                "Euclidean distance",
+                "Manhattan distance",
+                "Hamming distance",
+                "Chebyshev distance"
+            ],
+            correct: 0
+        },
+        {
+            question: "What does the transformation function (Augmentation) do in machine learning?",
+            options: [
+                "Increasing the size of labeled training sets by applying class-preserving transformations to create copies of labeled data points.",
+                "Look for specific syntactical patterns in the data.",
+                "Slices the data and outputs a binary mask indicating whether a data point is in the slice.",
+                "Using a pre-trained model to label the data.",
+                "Gives out random unrelated new data without labels to increase the training set and reduce overfitting."
+            ],
+            correct: 0
+        },
+        {
+            question: "What is the main purpose of using weak supervision techniques like Snorkel?",
+            options: [
+                "To reduce the need for large labeled datasets",
+                "To increase the complexity of machine learning models",
+                "To replace deep learning algorithms",
+                "To eliminate the need for feature engineering",
+                "To speed up model training on GPUs"
+            ],
+            correct: 0
+        },
+        {
+            question: "Which statement best illustrates a multimodal model's behavior in machine learning?",
+            options: [
+                "A model that processes a video by analyzing both audio and visual components simultaneously to generate a descriptive summary.",
+                "A model that generates captions by first processing an image and then using a separate model for text generation.",
+                "A model that processes news articles and classifies them based on sentiment using only text data.",
+                "A model that predicts the next word in a sentence after analyzing text data.",
+                "A model that predicts whether you might order pizza based on analyzing your cravings and preferences."
+            ],
+            correct: 0
+        },
+        {
+            question: "What is a significant challenge with Local Sensitivity Caching in large-scale environments?",
+            options: [
+                "Maintaining cache coherence and ensuring data freshness across distributed systems.",
+                "The inability to adapt to varying data access patterns over time.",
+                "The high cost of storage required to maintain cached data.",
+                "The complexity of integrating local sensitivity techniques with existing architectures.",
+                "The requirement for extensive manual tuning of cache parameters for optimal performance."
+            ],
+            correct: 0
+        },
+        {
+            question: "How do repel factors influence entity merging in factor graphs for entity resolution?",
+            options: [
+                "Repel factors discourage merging mentions that are dissimilar or likely to refer to different entities, helping to prevent incorrect merges of unrelated records.",
+                "Repel factors prioritize merging similar entities while penalizing dissimilar entities, ensuring all possible entities are merged before termination.",
+                "Repel factors identify duplicate records, reducing dataset size before resolution begins.",
+                "Repel factors increase merging thresholds, ensuring only near-identical entities merge.",
+                "Repel factors are irrelevant in entity resolution and typically used in clustering tasks."
+            ],
+            correct: 0
+        },
+        {
+            question: "Which metric is NOT mentioned as a regression metric in slides?",
+            options: [
+                "Area Under Curve (AUC)",
+                "Mean Absolute Error (MAE)",
+                "Mean Squared Error (MSE)",
+                "R-Squared (R² Score)"
+            ],
+            correct: 0
+        },
+        {
+            question: "What significance does finding a decision boundary have in linear classification models?",
+            options: [
+                "It separates different classes in feature space, allowing classification based on which side new points fall on.",
+                "It represents where loss function reaches minimum, ensuring best fit for training data.",
+                "It minimizes residuals between predicted and actual labels in regression problems.",
+                "It calculates distances between points in clustering tasks for proper group separation.",
+                "It’s only significant in multi-class classification problems, irrelevant in binary classification."
+            ],
+            correct: 0
+        },
+        {
+            question: "How do LSTM networks manage long-term dependencies with gates and cell state?",
+            options: [
+                  "The forget gate decides which parts of input to discard; input gate updates cell state; output gate controls hidden state passage; cell state acts as conveyor belt carrying information with minor changes.",
+                  "The forget gate retains all previous information; input gate filters new information; output gate allows final hidden state propagation; cell state erased and rebuilt each time step.", 
+                  "The forget gate adds new information; input gate deletes irrelevant cell state parts; output gate adjusts cell state for sequence generation improvement.", 
+                  "Gates regulate short-term memory; cell state updated externally by additional neural network."
+            ],
+            correct : 0
+        },
+        {
+            question :	"Which technique involves using pre-trained models for labeling functions according to lectures?", 
+            options : [
+                "Third-party models", 
+                "Pattern matching", 
+                "Keyword searches", 
+                "Distant supervision", 
+                "Crowdworker labels"
+            ],
+            correct : 0
+        }, 
+        {
+            question :	"What best describes labeling functions' goal in weak supervision according to lectures?", 
+            options : [
+                "To generate noisy but useful labels from various sources to expand labeled data.", 
+                "To ensure each data label is perfect and completely noise-free.", 
+                "To combine labeled and unlabeled data creating new labels through semi-supervised learning.", 
+                "To use only human annotators for labeling each data point.", 
+                "To transform all data into an unsupervised learning setup."
+           ], 
+           correct : 0
+        }, 
+        {
+           question :	"What formula is used for Mean Absolute Error (MAE) in machine learning according to lectures?", 
+           options : [
+                "(1/n) * Σ |yᵢ – ŷᵢ|", 
+                "(1/n) * Σ (yᵢ – ŷᵢ)²", 
+                "(1/n) * Σ (yᵢ + ŷᵢ)", 
+                "(1/n) * Σ (yᵢ – ŷᵢ)³", 
+                "(yᵢ + ŷᵢ)"
+           ], 
+           correct : 0
+        }, 
+        {
+           question :	"How does Locality Sensitive Hashing (LSH) work, and what’s an example application according to lectures?", 
+           options : [
+                `LSH hashes similar items into same bucket with high probability; used by Google.com for approximate nearest neighbor search like reverse image search feature.`,  
+                `LSH cryptographic method used by websites like Google.com to securely store passwords by generating unique hash values.`,  
+                `LSH compresses large datasets into smaller space using methods like PCA; Google.com uses this to optimize search queries.`,  
+                `LSH clusters points based on dissimilarities; applied by Google.com to separate unrelated search results.`,  
+                `LSH directly compares raw values like pixel intensity; Google.com uses it to enhance image classification quality in search algorithm.`
+           ], 
+           correct : 0
+        }, 
+        {
+           question :	"How can accuracy of noisy labeling functions be assessed before training according to weak supervision lectures?", 
+           options : [
+                `By comparing overlap/agreement between multiple functions on validation set.`,  
+                `By manually labeling every point verifying generated labels.`,  
+                `By applying dimensionality reduction reducing noise in labels.`,  
+                `By increasing complexity of functions.`,  
+                `By using clustering verifying label distribution across classes.`  
+           ], 
+           correct : 0
+        }, 
+        {
+           question :	"Which evaluation metric suits determining correct entity matches when false matches are costly in entity resolution?", 
+           options : [
+                `Precision`,  
+                `Recall`,  
+                `F1-Score`,  
+                `Accuracy`
+           ], 
+           correct : 0
+        }, 
+        {
+           question :	"What best describes key difference between semi-supervised learning vs weak-supervision according to lectures?", 
+           options : [	
+                `Semi-supervised propagates knowledge from labeled data labeling more; weak-supervision injects knowledge labeling more.`,  
+                `Semi-supervised injects knowledge labeling more; weak-supervision propagates knowledge based on existing labels.`,  
+                `Semi-supervised uses large labeled data; weak-supervision relies on completely unlabeled data.`,  
+                `Semi-supervised uses labeled/unlabeled data while weak-supervision skips labeling entirely.`,  
+                `Semi-supervised relies on psychic abilities predicting labels while weak-supervision uses magic.`  
+           ], 	
+           correct : 0	
+        },
+        {
+            question: "According to Lecture 12, which model type is used to address long-term dependencies in sequence data (for example, language translation)?",
+            options: [
+                "Long Short-Term Memory (LSTM)",
+                "K-Nearest Neighbors",
+                "Feedforward Neural Networks",
+                "Decision Trees",
+                "Naive Bayes"
+            ],
+            correct: 0
+        },
+        {
+            question: "In the context of entity resolution, which technique is most suitable for resolving different representations of the same real-world entity (e.g., 'IBM' and 'International Business Machines')?",
+            options: [
+                "String similarity measures",
+                "Feature scaling",
+                "Decision trees",
+                "Principal Component Analysis (PCA)",
+                "Hyperparameter tuning"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the ML lecture, which one of the following statements about the SGD regressor hyper-parameters is correct?",
+            options: [
+                "The 'max_iter' parameter sets the maximum number of iterations for the model.",
+                "The n_iter_no_change=10 indicates the model will stop after exactly 10 iterations.",
+                "The ‘tol’ parameter specifies the step size in gradient descent.",
+                "The learning_rate='adaptive' means that the learning rate will stay constant throughout training.",
+                "The max_iter=10000 ensures that the model will keep running for 10000 iterations regardless of convergence."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture slides, in the context of Mean Squared Error (MSE), if squaring residuals leads to a harsh penalization due to many residuals being close to 1.0 or -1.0, what is a recommended strategy to address this issue?",
+            options: [
+                "Rescale the values before calculating differences and then square them, accepting potential bias in the results.",
+                "Use Mean Absolute Error (MAE) instead of MSE to avoid squaring and maintain error magnitude.",
+                "Apply a smaller penalty, such as raising the absolute value of residuals to the power of 1 instead of squaring them.",
+                "Use a classification metric like precision instead of MSE for model evaluation.",
+                "Evaluate regression errors using a confusion matrix to better understand prediction accuracy."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, which metric is most appropriate for evaluating a classification model on an imbalanced dataset where correctly identifying the rare positive class is crucial?",
+            options: [
+                "Recall",
+                "Accuracy",
+                "Precision",
+                "F1 Score",
+                "Area Under the ROC Curve (AUC-ROC)"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to Lecture 12, what is the forget gate for in an LSTM neuron?",
+            options: [
+                "To determine how much of the past information is to be retained in the cell state.",
+                "To regulate how much new information is stored in the cell state.",
+                "To predict the output of a specific time step using the current input.",
+                "To combine the short-term and long-term memory into one representation.",
+                "To apply an activation function on inputs to produce outputs."
+            ],
+            correct: 0
+        },
+        {
+            question: "Which of the following tasks is best suited for clustering in machine learning?",
+            options: [
+                "Grouping similar customers based on their purchasing behavior.",
+                "Predicting the stock price of a company.",
+                "Diagnosing a patient as having a disease or not based on their symptoms.",
+                "Predicting the probability that a player will score in a soccer match."
+            ],
+            correct: 0
+        },
+        {
+            question: "A real estate agency is using a linear regression model to predict house prices based on various features like size, location, and number of bedrooms. Why is using R-squared (R²) a good choice in this context?",
+            options: [
+                  "It explains how much of the variance in house prices is captured by the model.", 
+                  "It measures the average error between predicted and actual prices.", 
+                  "It identifies the importance of each feature in predicting house prices.", 
+                  "It ensures that the model makes no overfitting mistakes.", 
+                  "It is used to balance precision and recall."
+            ],
+            correct : 0
+        },
+        {
+           question :	"You are working on a task to detect rare diseases, where identifying them is crucial. Which method is most appropriate for addressing an imbalanced dataset?", 
+           options : [	
+                `Use data augmentation to expand the minority class samples`,  
+                `Use under-sampling to reduce the number of majority class samples`,  
+                `Use Random Forest for feature selection to reduce data dimensionality`,  
+                `Use k-means clustering to group similar samples and balance classes`,  
+                `Use dropout to randomly disable neurons during model training`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"Which combination of techniques is most suitable for developing a robust NLP model to classify sentiment in an imbalanced dataset with limited labeled data?", 
+           options : [	
+                `Snorkel for weak supervision, LSTM with GRU, and F-score optimization`,  
+                `Linear regression with accuracy as primary metric`,  
+                `Convolutional neural network with ROC curve analysis`,  
+                `Naive Bayes classifier with precision as main evaluation metric`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"What is one advantage of using vector representations (embeddings) for tokens in NLP models like Spacy?", 
+           options : [	
+                `Vector representations capture semantic relationships between words, enabling more context-aware processing.`,  
+                `They significantly reduce data size.`,  
+                `Vector representations eliminate need for part-of-speech tagging.`,  
+                `Embeddings allow text conversion into speech.`,  
+                `Vector representations ensure grammatical correctness.`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"What is the purpose of dropout layers in deep learning models as discussed in lecture?", 
+           options : [	
+                `To reduce overfitting by randomly dropping neurons during training.`,  
+                `To increase training speed.`,  
+                `To combine outputs of multiple models.`,  
+                `To ensure all features are considered during training.`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"In SpaCy, what is used to represent a span of tokens from a document?", 
+           options : [	
+                `doc[a:b]`,  
+                `nlp.vocab`,  
+                `doc[i].lex`,  
+                `nlp.tokenizer`,  
+                `doc[i]`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"While evaluating machine learning models, which metric should be used when false negatives are more expensive than false positives?", 
+           options : [	
+             `"Recall"`,
+             `"Precision"`,
+             `"Accuracy"`,
+             `"F1 Score"`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"In a SpaCy pipeline designed for coreference resolution, what issue could arise with an incompatible version of NumPy?", 
+           options : [	
+             `"The pipeline may fail to tokenize properly; downgrading NumPy may be required."`,
+             `"The coreference model might output incorrect antecedents; upgrading NumPy is necessary."`,
+             `"Memory errors will occur during entity recognition; install custom package."`,
+             `"Performance degradation; adding additional coreference resolution model will fix it."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to lecture 11, which statement about Precision-Recall curves is true?", 
+           options : [	
+             `"They are more sensitive to class imbalance than ROC curves."`,
+             `"They always have same shape as ROC curves."`,
+             `"They are only useful for regression problems."`,
+             `"They plot True Positive Rate against False Positive Rate."`,
+             `"They are less informative than accuracy for imbalanced datasets."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to lecture, which collection in Scikit Learn contains pre-made functions purely for altering data?", 
+           options : [	
+             `"Transformers"`,
+             `"FeatureUnion"`,
+             `"Clusters"`,
+             `"Pipelines"`,
+             `"Neighbors"`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to lecture, which evaluation metric is most appropriate for assessing performance on highly imbalanced datasets?", 
+           options : [	
+             `"F1 score"`,
+             `"Accuracy"`,
+             `"Recall"`,
+             `"Precision"`,
+             `"Area Under ROC Curve (AUC-ROC)"`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"What is main difference between MAE and RMSE according to lecture?", 
+           options : [	
+             `"RMSE penalizes larger errors more than MAE by squaring errors."`,
+             `"MAE penalizes larger errors more than RMSE."`,
+             `"MAE measures average squared difference; RMSE calculates absolute difference."`,
+             `"RMSE and MAE always produce same values."`,
+             `"MAE penalizes smaller errors more than RMSE."`
+           ], 	
+           correct : 0	
+        },
+        {
+            question: "According to Machine Learning fundamentals, what is the purpose of using a validation set during the training of a machine learning model?",
+            options: [
+                "To tune hyperparameters and prevent overfitting.",
+                "To evaluate the model's performance on unseen data after training.",
+                "To train the model on a larger dataset.",
+                "To visualize the training process and identify any issues.",
+                "To ensure that the model generalizes well to all data."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on machine learning evaluation metrics, what does recall measure?",
+            options: [
+                "The ability of a model to identify all relevant instances in the dataset.",
+                "The proportion of true positive predictions out of the total predictions made.",
+                "The ability of a model to minimize false positives.",
+                "The overall accuracy of the model's predictions.",
+                "The ability of a model to distinguish between different classes."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what does a higher specificity indicate about a model's performance?",
+            options: [
+                "The model has a higher true negative rate.",
+                "The model is better at identifying true positives.",
+                "The model has a higher false positive rate.",
+                "The model has a lower recall."
+            ],
+            correct: 0
+        },
+        {
+            question: "Which of the following best describes the function of Named Entity Recognition (NER) in SpaCy?",
+            options: [
+                "Named Entity Recognition (NER) identifies and classifies entities such as people, organizations, and locations within a text.",
+                "Named Entity Recognition (NER) is responsible for breaking the text into individual tokens based on spaces and punctuation.",
+                "Named Entity Recognition (NER) assigns part-of-speech tags to tokens to indicate their grammatical role in a sentence.",
+                "Named Entity Recognition (NER) performs sentiment analysis to determine the overall tone (positive, negative, or neutral) of a document.",
+                "Named Entity Recognition (NER) is used to group words together based on their semantic similarity."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what is the formulae to define F1-score?",
+            options: [
+                "F1 = 2 * (Precision * Recall) / (Precision + Recall)",
+                "F1 = Precision / Recall",
+                "F1 = Recall / Precision",
+                "F1 = Accuracy",
+                "F1 = Precision"
+            ],
+            correct: 0
+        },
+        {
+            question: "Which of the following statements correctly explains the role of the Span object for SpaCy?",
+            options: [
+                "A Span object represents a slice of a Doc, which is a sequence of tokens, and can be used to access a specific part of the text, such as a phrase or sentence.",
+                "A Span object is used to hold the language model configuration and cannot contain tokens from a Doc.",
+                "A Span object is used exclusively for storing named entities recognized in the text.",
+                "A Span object is responsible for performing dependency parsing on the text.",
+                "A Span object holds the entire document as a single token and does not allow slicing or token access."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on ML and in the context of a confusion matrix for binary classification, what does TP represent?",
+            options: [
+                "Cases where the model predicted positive and the correct class is positive",
+                "Cases where the model predicted negative but the correct class is positive",
+                "The total number of positive cases in the dataset",
+                "The accuracy of the model for positive predictions",
+                "The precision of the model for negative predictions"
+            ],
+            correct: 0
+        },
+        {
+            question: "Which of the following scenarios is an example of linear classification?",
+            options: [
+                "Using the content of an email to classify if it is spam or not.",
+                "Evaluating a home's market value based on attributes including size, location, and amenities.",
+                "Determining a student's test score depending on how many hours they spent studying.",
+                "Using past performance data to project a company's sales revenue.",
+                "Using the present weather to predict the temperature for the following day."
+            ],
+            correct: 0
+        },
+        {
+            question: "In machine learning, what is the purpose of using grid search during the model evaluation process?",
+            options: [
+                "To explore different combinations of hyperparameters and identify the optimal set for model performance.",
+                "To increase the model’s precision by reducing overfitting.",
+                "To evaluate the model’s performance using multiple cross-validation splits.",
+                "To adjust the learning rate automatically during training.",
+                "To compute the confusion matrix across different classes."
+            ],
+            correct: 0
+        },
+        {
+            question: "While creating a custom pipeline component with spaCy, what does setting the first parameter to True in the call to add_pipe() method do?",
+            options: [
+                  "Adds the custom component as the first component in the overall spaCy pipeline.", 
+                  "Adds the custom component as first among all custom components, but after built-in components.", 
+                  "Adds custom component as last component in overall spaCy pipeline.", 
+                  "Adds custom component after first component in overall spaCy pipeline.", 
+                  "Copies component configuration of first component in overall spaCy pipeline."
+            ],
+            correct : 0
+        },
+        {
+           question :	"According to lecture, what is main difference between Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE)?", 
+           options : [	
+                `RMSE penalizes larger errors more than MAE by squaring errors.`,  
+                `MAE penalizes larger errors more than RMSE.`,  
+                `MAE measures average squared difference; RMSE calculates absolute difference.`,  
+                `RMSE and MAE always produce same values.`,  
+                `MAE penalizes smaller errors more than RMSE.`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"What is purpose of using Root Mean Squared Error (RMSE) in regression models?", 
+           options : [	
+                `To provide error metric easier to interpret by taking square root of MSE`,  
+                `To classify data points into different categories`,  
+                `To increase model’s recall`,  
+                `To compute precision of regression model`,  
+                `To compare performance of different regression models`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"Which statement accurately describes use of SpaCy pipelines in machine learning?", 
+           options : [	
+                `SpaCy pipelines provide pre-built components easily customized for specific tasks.`,  
+                `Custom SpaCy pipeline components cannot integrate external models or libraries.`,  
+                `SpaCy pipelines automatically handle coreference resolution but may require package adjustments.`,  
+                `Default SpaCy pipeline only supports tokenization and part-of-speech tagging excluding named entity recognition.`,  
+                `SpaCy pipeline components are fixed and cannot be extended with custom models.`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to lecture, which statement about Precision and Recall is true?", 
+           options : [	
+             `"Increasing precision typically reduces recall"`,
+             `"Increasing recall will always increase precision"`,
+             `"Precision measures number of true negatives"`,
+             `"Recall measures how often false positives occur"`,
+             `"Precision and recall are unrelated in classification"`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to lecture, which is common drawback of Stochastic Gradient Descent(SGD) compared to Batch Gradient Descent?", 
+           options : [	
+             `"Stochastic Gradient Descent can be less stable and prone to oscillations updating parameters using individual samples."`,
+             `"Stochastic Gradient Descent converges faster to global minimum in every case compared to Batch Gradient Descent."`,
+             `"Stochastic Gradient Descent eliminates need for tuning learning rate during training."`,
+             `"Stochastic Gradient Descent more expensive because it processes entire dataset at each step."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"What type of learning task is Billy trying to solve predicting average goals scored by gator soccer player based on features like shooting accuracy?", 
+           options : [	
+             `"Regression"`,
+             `"Classification"`,
+             `"Clustering"`,
+             `"Anomaly Detection"`,
+             `"Billy missed professor Grant's lectures and remains clueless !!"`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to lecture, which key characteristic describes linear models in machine learning?", 
+           options : [	
+             `"They predict target variable using linear function of features."`,
+             `"They always produce curved decision boundaries."`,
+             `"They can only be used for classification tasks but not regression."`,
+             `"They automatically handle non-linear relationships in data."`,
+             `"They require exponentially more parameters as number features increases."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"What does point (0, 1) signify in ROC Curve?", 
+           options : [	
+             `"The best possible model"`,
+             `"The worst possible model"`,
+             `"A model that predicts every instance as negative."`,
+             `"A scenario where all predicted positives are actually negatives."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"Which Scikit-learn API function/component used apply operations input variables?", 
+           options : [	
+             `"transform()"`,
+             `"fit()"`,
+             `"predict()"`,
+             `"Transformers"`,
+             `"Pipeline()"`
+           ], 	
+           correct : 0	
+        },
+        {
+            question: "According to the lecture, which of the following statements best describes the relationship between true positives (TP), false positives (FP), and precision in a classification model?",
+            options: [
+                "Precision is calculated as TP divided by the sum of TP and FP, indicating the proportion of positive predictions that are correct.",
+                "Precision is calculated as the ratio of true negatives (TN) to the total number of predictions made by the model.",
+                "Precision indicates how many of the actual positive cases were correctly identified by the model, calculated by TP divided by the total actual positives.",
+                "Precision is the same as accuracy, reflecting the total number of correct predictions over all predictions made.",
+                "Precision reflects the model's ability to identify negative cases, calculated using FP and TN."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to ML lecture, why is the Pipeline method in scikit-learn commonly used, and what are its key advantages?",
+            options: [
+                "To streamline the process of applying multiple transformations and a final estimator in a sequence.",
+                "To automatically tune hyperparameters of all the steps in a machine learning workflow.",
+                "To store multiple models in parallel and compare their performances efficiently.",
+                "To ensure that models are trained only on unscaled data for better accuracy.",
+                "To perform feature selection and hyperparameter tuning simultaneously."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the ML Tasks lecture, what will be the output of the following code:\n\nimport spacy\nnlp = spacy.load(\"en_core_web_sm\")\nimport en_core_web_sm\nnlp = en_core_web_sm.load()\ndoc = nlp(\"This is a sentence.\")\nprint([(w.text, w.pos_) for w in doc])",
+            options: [
+                "[('This', 'PRON'), ('is', 'AUX'), ('a', 'DET'), ('sentence', 'NOUN'), ('.', 'PUNCT')]",
+                "[('is', 'AUX'), ('This', 'PRON'), ('sentence', 'NOUN'),  ('a', 'DET'),('.', 'PUNCT')]",
+                "[('This', 95), ('is', 87), ('a', 90), ('sentence', 92), ('.', 97)]",
+                "[('is', 87), ('a', 90), ('This', 95), ('.', 97) ,('sentence', 92)]",
+                "\"This is a sentence.\""
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on Machine Learning and its metrics, what is the key difference between an F-Beta score and a standard F1 score?",
+            options: [
+                "The F-Beta score emphasizes more weight on the recall when beta is greater than 1, whereas the F1 score balances the recall and precision equally.",
+                "The F-Beta score emphasizes more weight on the precision when beta is greater than 1, whereas the F1 score balances the recall and precision equally.",
+                "The F-Beta score uses a linear combination of precision and recall, on the other-hand F1 uses their harmonic mean.",
+                "The F-Beta score is only applicable when precision is greater than recall, while the F1 score works in every case."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, which term accurately describes user-defined extensions that add specific attributes or properties to tokens within the SpaCy NLP pipeline?",
+            options: [
+                "Token Extensions",
+                "Custom SpaCy Pipeline Components",
+                "Lexical Attribute Adjustments",
+                "Dependency Parsing Modules"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on balancing precision and recall, what is the general effect of raising the classification threshold in a binary classification model?",
+            options: [
+                "It increases precision and decreases recall",
+                "It decreases precision and increases recall",
+                "It increases both precision and recall",
+                "It decreases both precision and recall",
+                "It does not affect precision or recall"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what is the primary purpose of spaCy's Doc object?",
+            options: [
+                "To represent a processed text document with linguistic annotations",
+                "To handle tokenization of raw text input",
+                "To perform named entity recognition",
+                "To generate word embeddings",
+                "To manage the spaCy pipeline components"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what does a high precision value indicate in a classification model?",
+            options: [
+                "The model has a low rate of false positives.",
+                "The model correctly identifies all actual positives.",
+                "The model predicts too many negative cases.",
+                "The model achieves a high overall accuracy."
+            ],
+            correct: 0
+        },
+        {
+            question: "Which of the following best describes the coefficient (coef_) in linear regression models?",
+            options: [
+                "It represents the weight assigned to each feature in the model.",
+                "It is the threshold value used to classify data points.",
+                "It determines the probability of a positive class prediction.",
+                "It is the average error between predicted and actual values.",
+                "It is the intercept term added to the model output."
+            ],
+            correct: 0
+        },
+        {
+            question: "In linear regression, what does R-squared (R²) metric represent?",
+            options: [
+                  "R-squared shows how well regression model explains variability of outcome.", 
+                  "R-squared tells you how steep line is in regression model.", 
+                  "R-squared tells you if model statistically significant.", 
+                  "R-squared shows relationship strength between variables."
+            ],
+            correct : 0
+        },
+        {
+           question :	"According to supervised learning lecture, what does term \"class imbalance\" refer training machine learning models?", 
+           options : [	
+                `Situation where number instances one class significantly outweighs instances another class.`,  
+                `Scenario where all classes have equal representation training dataset.`,  
+                `Condition arises when model performs better one type input another.`,  
+                `Issue occurs when training data has too many irrelevant features.`,  
+                `Term used describe correlation between features target variable.`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to regression evaluation metrics lecture, why might RMSE not always suitable measure model performance even if error value relatively small?", 
+           options : [	
+                `Because even small RMSE values can represent significant errors certain contexts such predicting global temperatures.`,  
+                `Because RMSE only considers average all errors ignores large deviations.`,  
+                `Because RMSE not applicable classification models only works regression.`,  
+                `Because RMSE biased towards penalizing smaller errors more heavily larger ones.`,  
+                `Because RMSE does not differentiate between positive negative errors.`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to ML Tasks lecture, which metrics would you use assess fit regression model?", 
+           options : [	
+                `Mean Absolute Error (MAE)`,  
+                `Precision`,  
+                `Recall`,  
+                `F1-Score`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"In context diagnosing rare type cancer dataset consists benign tumors malignant tumors why accuracy not reliable measure evaluating performance predictive model?", 
+           options : [	
+             `"Accuracy can be artificially high because model may only predict most frequent class making it misleading presence class imbalance."`,
+             `"Accuracy measures total variance explained by model isn't useful classification problems."`,
+             `"Accuracy only accounts correct predictions malignant class ignoring benign class."`,
+             `"Accuracy indicates balance between precision recall isn't relevant imbalanced datasets."`,
+             `"Accuracy affected threshold setting model unrelated class distribution."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to lecture which metric measures how well identifies positive instances dataset?", 
+           options : [	
+             `"Recall"`,
+             `"Precision"`,
+             `"Accuracy"`,
+             `"F-score"`,
+             `"Confusion Matrix"`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to lecture general effect raising classification threshold binary classification model?", 
+           options : [	
+             `"It decreases recall increases precision."`,
+             `"It increases recall decreases precision."`,
+             `"It decreases both recall precision."`,
+             `"It increases both recall precision."`,
+             `"It has no effect precision recall."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"A model predicting whether patient rare disease predicts patient disease reality patient does not What type classification result this?", 
+           options : [	
+             `"False Positive."`,
+             `"True Negative."`,
+             `"True Positive."`,
+             `"False Negative."`,
+             `"True TFI Fan."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to lecture which following methods NOT function Scikit-Learn API model training evaluation?", 
+           options : [	
+             `"visualize()"`,
+             `"transform()"`,
+             `"predict()"`,
+             `"fit()"`,
+             `"Pipeline()"`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According Lecture primary purpose using F-score classification problems?", 
+           options : [	
+             `"It provides balance between precision recall offering single metric evaluate performance."`,
+             `"It directly measures accuracy model."`,
+             `"It prioritizes precision over recall reduce false positives."`,
+             `"It used optimize learning rate during training."`,
+             `"It useful when need assess performance imbalanced datasets."`
+           ], 	
+           correct : 0	
+        },
+        {
+            question: "According to the lecture, which component is critical for adding custom functionality to a SpaCy pipeline in Natural Language Processing (NLP)?",
+            options: [
+                "Custom Pipeline Components",
+                "Token Extensions",
+                "Span Extensions",
+                "Coreference Resolutions",
+                "Named Entity Recognition (NER)"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, which of the following best describes precision in a machine learning model?",
+            options: [
+                "The proportion of true positive predictions out of all the positive predictions made by the model.",
+                "The proportion of true positive predictions out of all actual positive instances in the dataset.",
+                "The proportion of false negative predictions out of all positive predictions made by the model.",
+                "The total number of correct predictions made by the model, divided by the total number of predictions.",
+                "The proportion of true negative predictions out of all actual negative instances in the dataset."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on evaluation metrics, what does the ROC curve illustrate about a classification model?",
+            options: [
+                "The trade-off between True Positive Rate (Recall) and False Positive Rate.",
+                "The relationship between Precision and Recall.",
+                "The total number of correct predictions made by the model.",
+                "The correlation between the predicted and actual values.",
+                "The average time taken for the model to classify each observation."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what does the R² score signify in the context of evaluating a regression model's performance?",
+            options: [
+                "The proportion of variance in the dependent variable explained by the independent variables in a regression model.",
+                "The squared correlation between the predicted and actual values.",
+                "The degree of overfitting in the model.",
+                "The average distance of predictions from the true values.",
+                "The ability of the model to capture non-linear relationships."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, in linear classification what does the model create to separate data points into different classes?",
+            options: [
+                "A linear decision boundary",
+                "A regression line",
+                "A clustering algorithm",
+                "A confusion matrix"
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture on evaluation metrics, which of the following best describes Recall in the context of a supervised machine learning classification model?",
+            options: [
+                "The ratio of correctly predicted positive observations to all actual positive observations.",
+                "The ratio of correctly predicted negative observations to all actual negative observations.",
+                "The ratio of correctly predicted positive observations to all predicted positive observations.",
+                "The ratio of all correct predictions (positive and negative) to the total number of observations.",
+                "A measure of the number of features selected by the model."
+            ],
+            correct: 0
+        },
+        {
+            question: "According to the lecture, what is the primary reason for squaring the differences of errors when calculating the Mean Squared Error(MSE) as a regression evaluation metric?",
+            options: [
+                  "To increase the weight of large errors, increasing the model's sensitivity to major deviations.", 
+                  "To simplify the computation process.", 
+                  "To make sure the negative deviations don't cancel out the positive ones.", 
+                  "To prevent the model from overfitting.", 
+                  "To reduce the impact of small errors."
+            ],
+            correct : 0
+        },
+        {
+           question :	"According to the lecture on Scikit-Learn, which of the following best describes the function of the fit() method in the Scikit-Learn library?", 
+           options : [	
+                `Trains an internal model on training data.`,  
+                `Predicts future outcomes based on input data without retraining.`,  
+                `Standardizes data by removing mean and scaling to unit variance.`,  
+                `Measures model’s prediction accuracy using validation set.`,  
+                `Exports model’s learning algorithm for implementation in external system.`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to the lecture, what is purpose of confusion matrix in evaluating classification models?", 
+           options : [	
+                `To visualize performance by summarizing correct and incorrect predictions.`,  
+                `To calculate mean squared error of model.`,  
+                `To determine optimal hyperparameters for model.`,  
+                `To compare multiple models against each other.`,  
+                `To evaluate training time of model.`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"Which following NOT common task handled SpaCy Pipelines?", 
+           options : [	
+                `Image classification.`,  
+                `Named Entity Recognition (NER).`,  
+                `Dependency Parsing.`,  
+                `Tokenization.`  
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According to lecture, which following best describes \"coreference resolution\"?", 
+           options : [	
+             `"Linking different textual mentions that refer same entity."`,
+             `"Resolving ambiguities document's grammatical structure."`,
+             `"Mapping textual data relational database schema."`,
+             `"Classifying documents predefined categories."`,
+             `"Identifying irrelevant documents dataset."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According lecture (ML Lecture 1), what primary function intercept linear regression model?", 
+           options : [	
+             `"It represents expected value dependent variable when all independent variables zero."`,
+             `"It adjusts slope regression line based data scale."`,
+             `"It determines strength correlation between variables."`,
+             `"It calculates residual values regression."`,
+             `"It coefficient used weigh one independent variables."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According lecture, confusion matrix, what True Negative (TN) value represent?", 
+           options : [	
+             `"Number correct predictions where model predicted negative actual class negative."`,
+             `"Number incorrect predictions where model predicted positive when actual class negative."`,
+             `"Number correct predictions where model predicted positive actual class positive."`,
+             `"Total number predictions model made."`,
+             `"Percentage positive predictions that were correct."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According lecture SpaCy Pipelines, primary purpose adding custom components pipeline?", 
+           options : [	
+             `"To extend functionality pipeline performing tasks such entity recognition, text classification, token manipulation."`,
+             `"To replace tokenizer component within SpaCy’s default pipeline configuration."`,
+             `"To automatically adjust hyperparameters machine learning models used text processing tasks."`,
+             `"To remove need using pre-trained models any task NLP."`,
+             `"To ensure compatibility legacy systems do not support SpaCy pipelines."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"According lecture Which metric should avoided imbalanced datasets where rare class more critical?", 
+           options : [	
+             `"Accuracy"`,
+             `"Recall"`,
+             `"F1 Score"`,
+             `"Precision"`,
+             `"Specificity"`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"In context linear models, which following best describes purpose linear classifier?", 
+           options : [	
+             `"To separate input space different regions corresponding distinct classes."`,
+             `"To minimize error between predicted actual continuous values."`,
+             `"To cluster similar entities based their features."`,
+             `"To identify relationships between categorical variables dataset."`,
+             `"To create non-linear boundary classification."`
+           ], 	
+           correct : 0	
+        }, 
+        {
+           question :	"Which following statements true about Machine Learning tasks discussed lecture?", 
+           options : [	
+             `"Feature extraction aims reduce dimensionality raw data while retaining most relevant information."`,
+             `"Sentence similarity tasks involve extracting key points large textual data compare sentence structures."`,
+             `"In key point detection, goal compute numerical score similarity two sentences."`,
+             `"Feature extraction methods typically apply only text data, ignoring numerical visual data sources."`,
+             `"Sentence similarity algorithms focus identifying significant points time-series data, such peak events."`
+           ], 	
+           correct : 0	
+        }
+        
+            // Your quiz questions here
+        ];
+
+        let score = 0;
+        let answeredQuestions = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function displayQuiz() {
+            const quizContainer = document.getElementById('quiz');
+            const shuffledQuestions = shuffleArray([...quizData]);
+            
+            shuffledQuestions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                
+                const shuffledOptions = shuffleArray([...question.options]);
+                const correctAnswer = question.options[question.correct];
+                const correctIndex = shuffledOptions.indexOf(correctAnswer);
+
+                questionDiv.innerHTML = `
+                    <p><strong>Q${index + 1}:</strong> ${question.question}</p>
+                    <div class="options">
+                        ${shuffledOptions.map((option, i) => `
+                            <div class="option" data-correct="${i === correctIndex}">
+                                ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                quizContainer.appendChild(questionDiv);
+            });
+
+            updateProgress();
+
+            // Add click event listeners to options
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', function() {
+                    if (!this.classList.contains('correct') && !this.classList.contains('incorrect')) {
+                        const isCorrect = this.dataset.correct === 'true';
+                        this.classList.add(isCorrect ? 'correct' : 'incorrect');
+                        
+                        if (!isCorrect) {
+                            const siblings = this.parentElement.children;
+                            Array.from(siblings).forEach(sib => {
+                                if (sib.dataset.correct === 'true') {
+                                    sib.classList.add('correct');
+                                }
+                            });
+                        }
+
+                        if (isCorrect) score++;
+                        answeredQuestions++;
+                        
+                        const siblings = this.parentElement.children;
+                        Array.from(siblings).forEach(sib => {
+                            sib.style.pointerEvents = 'none';
+                        });
+
+                        updateScore();
+                        updateProgress();
+                    }
+                });
+            });
+        }
+
+        function updateScore() {
+            const percentage = Math.round((score / answeredQuestions) * 100);
+            document.getElementById('score').innerHTML = 
+                `Score: ${score}/${answeredQuestions} (${percentage}%)`;
+        }
+
+        function updateProgress() {
+            document.getElementById('progress').textContent = 
+                `${answeredQuestions}/${quizData.length}`;
+        }
+
+        // Initialize quiz
+        displayQuiz();
+    </script>
+</body>
+</html>
